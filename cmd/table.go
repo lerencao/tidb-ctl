@@ -14,7 +14,13 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/pingcap/tidb/tablecodec"
+	"github.com/pingcap/tidb/util/codec"
+	"net/http"
+	"net/url"
 
 	"github.com/spf13/cobra"
 )
@@ -25,9 +31,16 @@ const (
 	usageSurffix = "disk-usage"
 )
 
+const (
+	pdAddrFlagName = "pd-addr"
+	tableIdName    = "table-id"
+)
+
 var (
 	tableDB    string
 	tableTable string
+	pdAddr     string
+	tableId    uint64
 )
 
 // tableCmd represents the table command
@@ -38,7 +51,20 @@ var tableRootCmd = &cobra.Command{
 }
 
 func init() {
-	tableRootCmd.AddCommand(regionCmd, diskUsageCmd)
+	scatterRangeCmd.Flags().StringVarP(&pdAddr, pdAddrFlagName, "p", "", "remote pd address")
+	scatterRangeCmd.Flags().Uint64Var(&tableId, tableIdName, 0, "table id")
+
+	requiredFlags := []string{
+		pdAddrFlagName, tableIdName,
+	}
+	for _, v := range requiredFlags {
+		if err := scatterRangeCmd.MarkFlagRequired(v); err != nil {
+			fmt.Printf("can not mark flag, flag %s is not found", v)
+			return
+		}
+
+	}
+	tableRootCmd.AddCommand(regionCmd, diskUsageCmd, scatterRangeCmd)
 	tableRootCmd.PersistentFlags().StringVarP(&tableDB, dbFlagName, "d", "", "database name")
 	tableRootCmd.PersistentFlags().StringVarP(&tableTable, tableFlagName, "t", "", "table name")
 	if err := tableRootCmd.MarkPersistentFlagRequired(dbFlagName); err != nil {
@@ -77,4 +103,47 @@ func getTableDiskUsage(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("too many arguments")
 	}
 	return httpPrint(tablePrefix + tableDB + "/" + tableTable + "/" + usageSurffix)
+}
+
+const scatterRangeName = "scatter-range"
+
+var scatterRangeCmd = &cobra.Command{
+	Use:   scatterRangeName,
+	Short: "scatter range of table",
+	Long:  fmt.Sprintf("tidb-ctl table %s --pd-addr(-p) [pd address] --table-id [table id] --database(-d) [database name] --table(-t) [table name]", scatterRangeName),
+	RunE:  scatterRange,
+}
+
+func scatterRange(cmd *cobra.Command, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("too many arguments")
+	}
+
+	if cmd.Flag(tableIdName).Changed {
+		startKey, endKey := tablecodec.GetTableHandleKeyRange(int64(tableId))
+		startKey = codec.EncodeBytes([]byte{}, startKey)
+		endKey = codec.EncodeBytes([]byte{}, endKey)
+		rangeName := fmt.Sprintf("%d-%s.%s", tableId, tableDB, tableTable)
+		input := map[string]string{
+			"name":       "scatter-range",
+			"start_key":  url.QueryEscape(string(startKey)),
+			"end_key":    url.QueryEscape(string(endKey)),
+			"range_name": rangeName,
+		}
+		v, err := json.Marshal(input)
+		if err != nil {
+			return err
+		}
+		scheduleURL := fmt.Sprintf("http://%s/pd/api/v1/schedulers", pdAddr)
+		resp, err := http.Post(scheduleURL, "application/json", bytes.NewBuffer(v))
+		if err != nil {
+			return err
+		}
+		if err := resp.Body.Close(); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }

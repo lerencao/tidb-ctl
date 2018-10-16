@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"github.com/pingcap/tidb/tablecodec"
 	"github.com/pingcap/tidb/util/codec"
+	"github.com/pkg/errors"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -34,6 +36,7 @@ const (
 const (
 	pdAddrFlagName = "pd-addr"
 	tableIdName    = "table-id"
+	indexIdName    = "index-id"
 )
 
 var (
@@ -41,6 +44,7 @@ var (
 	tableTable string
 	pdAddr     string
 	tableId    uint64
+	indexId    uint64
 )
 
 // tableCmd represents the table command
@@ -53,7 +57,7 @@ var tableRootCmd = &cobra.Command{
 func init() {
 	scatterRangeCmd.Flags().StringVarP(&pdAddr, pdAddrFlagName, "p", "", "remote pd address")
 	scatterRangeCmd.Flags().Uint64Var(&tableId, tableIdName, 0, "table id")
-
+	scatterRangeCmd.Flags().Uint64Var(&indexId, indexIdName, 0, "index id")
 	requiredFlags := []string{
 		pdAddrFlagName, tableIdName,
 	}
@@ -62,7 +66,6 @@ func init() {
 			fmt.Printf("can not mark flag, flag %s is not found", v)
 			return
 		}
-
 	}
 	tableRootCmd.AddCommand(regionCmd, diskUsageCmd, scatterRangeCmd)
 	tableRootCmd.PersistentFlags().StringVarP(&tableDB, dbFlagName, "d", "", "database name")
@@ -120,10 +123,20 @@ func scatterRange(cmd *cobra.Command, args []string) error {
 	}
 
 	if cmd.Flag(tableIdName).Changed {
-		startKey, endKey := tablecodec.GetTableHandleKeyRange(int64(tableId))
-		startKey = codec.EncodeBytes([]byte{}, startKey)
-		endKey = codec.EncodeBytes([]byte{}, endKey)
-		rangeName := fmt.Sprintf("%d-%s.%s", tableId, tableDB, tableTable)
+		var startKey, endKey []byte
+		var rangeName string
+		if cmd.Flag(indexIdName).Changed {
+			startKey, endKey = tablecodec.GetTableIndexKeyRange(int64(tableId), int64(indexId))
+			startKey = codec.EncodeBytes([]byte{}, startKey)
+			endKey = codec.EncodeBytes([]byte{}, endKey)
+			rangeName = fmt.Sprintf("%s.%s-%d-%d", tableDB, tableTable, tableId, indexId)
+		} else {
+			startKey, endKey = tablecodec.GetTableHandleKeyRange(int64(tableId))
+			startKey = codec.EncodeBytes([]byte{}, startKey)
+			endKey = codec.EncodeBytes([]byte{}, endKey)
+			rangeName = fmt.Sprintf("%s.%s-%d", tableDB, tableTable, tableId)
+		}
+
 		input := map[string]string{
 			"name":       "scatter-range",
 			"start_key":  url.QueryEscape(string(startKey)),
@@ -139,10 +152,14 @@ func scatterRange(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		if err := resp.Body.Close(); err != nil {
-			return err
+		defer resp.Body.Close()
+		if resp.StatusCode >= 300 {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			return errors.Errorf("request error: %s", string(body))
 		}
-
 	}
 
 	return nil

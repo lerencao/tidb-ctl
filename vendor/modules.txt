@@ -1,13 +1,75 @@
 # github.com/cpuguy83/go-md2man v1.0.7
 github.com/cpuguy83/go-md2man/md2man
+# github.com/cznic/mathutil v0.0.0-20180504122225-ca4c9f2c1369
+github.com/cznic/mathutil
+# github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
+github.com/golang/snappy
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/juju/errors v0.0.0-20181012004132-a4583d0a56ea
+github.com/juju/errors
+# github.com/konsorten/go-windows-terminal-sequences v0.0.0-20180402223658-b729f2633dfe
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/pingcap/goleveldb v0.0.0-20171020122428-b9ff6c35079e
+github.com/pingcap/goleveldb/leveldb
+github.com/pingcap/goleveldb/leveldb/comparer
+github.com/pingcap/goleveldb/leveldb/iterator
+github.com/pingcap/goleveldb/leveldb/memdb
+github.com/pingcap/goleveldb/leveldb/util
+github.com/pingcap/goleveldb/leveldb/cache
+github.com/pingcap/goleveldb/leveldb/errors
+github.com/pingcap/goleveldb/leveldb/filter
+github.com/pingcap/goleveldb/leveldb/journal
+github.com/pingcap/goleveldb/leveldb/opt
+github.com/pingcap/goleveldb/leveldb/storage
+github.com/pingcap/goleveldb/leveldb/table
+# github.com/pingcap/tidb v2.0.8+incompatible
+github.com/pingcap/tidb/tablecodec
+github.com/pingcap/tidb/util/codec
+github.com/pingcap/tidb/kv
+github.com/pingcap/tidb/mysql
+github.com/pingcap/tidb/sessionctx/stmtctx
+github.com/pingcap/tidb/terror
+github.com/pingcap/tidb/types
+github.com/pingcap/tidb/types/json
+github.com/pingcap/tidb/util/chunk
+github.com/pingcap/tidb/store/tikv/oracle
+github.com/pingcap/tidb/util/execdetails
+github.com/pingcap/tidb/util/memory
+github.com/pingcap/tidb/parser/opcode
+github.com/pingcap/tidb/util/charset
+github.com/pingcap/tidb/util/format
+github.com/pingcap/tidb/util/hack
+# github.com/pkg/errors v0.8.0
+github.com/pkg/errors
 # github.com/russross/blackfriday v0.0.0-20170728175326-4048872b16cc
 github.com/russross/blackfriday
+# github.com/sirupsen/logrus v1.1.1
+github.com/sirupsen/logrus
 # github.com/spf13/cobra v0.0.1
 github.com/spf13/cobra
 github.com/spf13/cobra/doc
 # github.com/spf13/pflag v1.0.0
 github.com/spf13/pflag
+# golang.org/x/crypto v0.0.0-20180904163835-0709b304e793
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1
+golang.org/x/net/context
+# golang.org/x/sys v0.0.0-20180905080454-ebe1bf3edb33
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/text v0.3.0
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/transform
+golang.org/x/text/encoding/internal
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/runes
 # gopkg.in/yaml.v2 v2.0.0-20171116090243-287cf08546ab
 gopkg.in/yaml.v2

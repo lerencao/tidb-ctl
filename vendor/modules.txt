@@ -1,0 +1,13 @@
+# github.com/cpuguy83/go-md2man v1.0.7
+github.com/cpuguy83/go-md2man/md2man
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/russross/blackfriday v0.0.0-20170728175326-4048872b16cc
+github.com/russross/blackfriday
+# github.com/spf13/cobra v0.0.1
+github.com/spf13/cobra
+github.com/spf13/cobra/doc
+# github.com/spf13/pflag v1.0.0
+github.com/spf13/pflag
+# gopkg.in/yaml.v2 v2.0.0-20171116090243-287cf08546ab
+gopkg.in/yaml.v2

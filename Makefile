@@ -9,10 +9,23 @@ PACKAGES  := $$(go list ./...)
 FILES     := $$(find . -name "*.go" | grep -vE "vendor")
 TOPDIRS   := $$(ls -d */ | grep -vE "vendor")
 
+GOMOD := -mod=vendor
+
+GOVER_MAJOR := $(shell go version | sed -E -e "s/.*go([0-9]+)[.]([0-9]+).*/\1/")
+GOVER_MINOR := $(shell go version | sed -E -e "s/.*go([0-9]+)[.]([0-9]+).*/\2/")
+GO111 := $(shell [ $(GOVER_MAJOR) -gt 1 ] || [ $(GOVER_MAJOR) -eq 1 ] && [ $(GOVER_MINOR) -ge 11 ]; echo $$?)
+ifeq ($(GO111), 1)
+$(warning "go below 1.11 does not support modules")
+GOMOD :=
+endif
+
 .PHONY: default test check doc
 
-default:
-	go build
+default: build
+
+build: export GO111MODULE=on
+build:
+	go build $(GOMOD) -o bin/tidb-ctl main.go
 
 check:
 	@echo "gofmt (simplify)"
@@ -31,7 +44,7 @@ check:
 	@ errcheck -blank $(PACKAGES) | grep -v "_test\.go" | awk '{print} END{if(NR>0) {exit 1}}'
 
 test: check
-	@ log_level=debug go test -p 3 -cover $(PACKAGES)
+	@ log_level=debug GO111MODULE=on go test $(GOMOD) -p 3 -cover $(PACKAGES)
 
 doc:
 	@mkdir -p doc
